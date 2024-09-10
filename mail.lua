@@ -1,4 +1,4 @@
---bruhhniggg
+--blackk
 
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -56,7 +56,7 @@ end
 
 
 -- Function to check total slots and consume vouchers until total slots reach 30
-local function checkAndConsumeVouchersUntil30Slots()
+local function checkAndConsumeVoucherIfNeeded()
     local totalSlots = daycareCmds.GetMaxSlots()
 
     print("Current Total Slots:", totalSlots)
@@ -131,9 +131,7 @@ local function enrollPetInDaycare()
         print("Enrolling pet with ID:", petId)
         ReplicatedStorage:WaitForChild("Network"):WaitForChild("Daycare: Enroll"):InvokeServer(unpack(args))
 
-        -- Notify via webhook
-        local message = "Enrolled pet with ID " .. petId .. " in the daycare with value 30."
-        sendWebhook(message)
+
     else
         print("No pet found with amount >= 30.")
     end
