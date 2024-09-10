@@ -1,4 +1,5 @@
---bluesotk
+--bruhhniggg
+
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -54,14 +55,15 @@ local function sendWebhook(message)
 end
 
 
--- Function to check total slots and consume voucher if needed
-local function checkAndConsumeVoucherIfNeeded()
+-- Function to check total slots and consume vouchers until total slots reach 30
+local function checkAndConsumeVouchersUntil30Slots()
     local totalSlots = daycareCmds.GetMaxSlots()
 
     print("Current Total Slots:", totalSlots)
     local counter = totalSlots  -- Store the current slot count
 
-    if totalSlots < 30 then
+    -- Loop to consume vouchers until total slots reach 30
+    while totalSlots < 30 do
         print("Consuming voucher because slots are less than 30...")
 
         -- Consume the voucher
@@ -78,18 +80,27 @@ local function checkAndConsumeVoucherIfNeeded()
             print("Total Slots after consuming voucher:", newTotalSlots)
 
             if newTotalSlots == counter then
-                -- Send webhook if the slots didn't increase
+                -- Send webhook if the slots didn't increase after voucher consumption
                 sendWebhook("Voucher consumed but slots did not increase. Current slots: " .. tostring(newTotalSlots) .. "/30.")
+                break -- If the slots didn't increase after consuming the voucher, stop trying
             else
                 print("Slots increased to " .. newTotalSlots .. " after voucher consumption.")
+                counter = newTotalSlots -- Update the counter to the new total slots
             end
+
+            -- Update totalSlots to the new total to continue checking
+            totalSlots = newTotalSlots
         else
             print("Error consuming voucher: " .. tostring(error)) -- Debug
+            break -- Stop trying if there's an error consuming the voucher
         end
-    else
-        print("Total slots are already 30 or more.")
+    end
+
+    if totalSlots >= 30 then
+        print("Reached 30 slots. No more vouchers needed.")
     end
 end
+
 
 
 
@@ -156,7 +167,7 @@ local function autoClaimMailbox()
                 print("Error claiming from mailbox: " .. tostring(error)) -- Debug
             end
 
-            task.wait(60)  -- Wait 30 seconds before checking the mailbox again
+            task.wait(30)  -- Wait 30 seconds before checking the mailbox again
         end
     end)
 end
