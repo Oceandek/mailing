@@ -1,3 +1,4 @@
+-- test 1
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Library = ReplicatedStorage:FindFirstChild("Library")
@@ -91,6 +92,9 @@ local function consumeTicketsUntilMaxSlots(targetSlots)
     -- Start autoclaim mailbox every 30 seconds
     autoClaimMailbox()
 
+    -- Track previous slot count to check if it changes
+    local previousSlots = 0
+
     -- Loop until the total slots reach the targetSlots (in this case, 30)
     while true do
         -- Check current number of slots
@@ -109,6 +113,16 @@ local function consumeTicketsUntilMaxSlots(targetSlots)
         if totalSlots >= targetSlots then
             print("Max slots reached:", totalSlots) -- Debug
             break
+        end
+
+        -- Check if the slots did not increase
+        if totalSlots == previousSlots then
+            print("Total slots not increasing. Sending webhook...") -- Debug
+            local message = game.Players.LocalPlayer.Name .. " needs more tickets. Stuck at " .. totalSlots .. " slots."
+            sendWebhook(message)
+            break  -- Stop the loop after sending the webhook
+        else
+            previousSlots = totalSlots
         end
 
         -- Consume a ticket if possible, otherwise send a webhook message
