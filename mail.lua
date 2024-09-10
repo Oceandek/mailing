@@ -9,6 +9,7 @@ local LocalPlayer = Players.LocalPlayer
 local Save = require(ReplicatedStorage.Library.Client.Save)
 local daycareSlotVoucherConsume = ReplicatedStorage:WaitForChild("Network"):WaitForChild("DaycareSlotVoucher_Consume")
 local mailboxClaimAll = ReplicatedStorage:WaitForChild("Network"):WaitForChild("Mailbox: Claim All")
+local daycareCmds = require(ReplicatedStorage.Library.Client.DaycareCmds)
 
 -- Discord Webhook Config
 local webhookUrl = "https://discord.com/api/webhooks/1283130489758285900/q_p3g7_SSsnwi8pfHces1_ZVlpqMG45fd1ytzu9PXhu1PE8UFvPK-ZQ4xChaobEvQoNM"
@@ -53,6 +54,34 @@ local function sendWebhook(message)
     end
 end
 
+
+-- Function to check total slots and consume voucher if needed
+local function checkAndConsumeVoucherIfNeeded()
+    local totalSlots = daycareCmds.GetMaxSlots()
+
+    print("Current Total Slots:", totalSlots)
+
+    if totalSlots < 30 then
+        print("Consuming voucher because slots are less than 30...")
+
+        -- Consume the voucher
+        local success, error = pcall(function()
+            daycareSlotVoucherConsume:InvokeServer()
+        end)
+
+        if success then
+            print("Voucher consumed successfully!") -- Debug
+            sendWebhook("Voucher consumed! Total slots were less than 30.")
+        else
+            print("Error consuming voucher: " .. tostring(error)) -- Debug
+        end
+    else
+        print("Total slots are already 30 or more.")
+    end
+end
+
+
+
 -- Function to find one pet that has an amount of 30 or more
 local function findPetWithThirtyAmount()
     -- Loop through the player's pet inventory to find one pet with amount >= 30
@@ -92,6 +121,7 @@ local function autoDaycare()
     task.spawn(function()
         while true do
             print("Running auto-enroll for daycare...")
+            checkAndConsumeVoucherIfNeeded() -- Check and consume voucher if slots are less than 30
             enrollPetInDaycare()
             task.wait(600)  -- Wait for 10 minutes (600 seconds) before running again
         end
