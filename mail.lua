@@ -1,5 +1,4 @@
---bruhhniggg
-
+--bluesotk
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -60,6 +59,7 @@ local function checkAndConsumeVoucherIfNeeded()
     local totalSlots = daycareCmds.GetMaxSlots()
 
     print("Current Total Slots:", totalSlots)
+    local counter = totalSlots  -- Store the current slot count
 
     if totalSlots < 30 then
         print("Consuming voucher because slots are less than 30...")
@@ -71,7 +71,18 @@ local function checkAndConsumeVoucherIfNeeded()
 
         if success then
             print("Voucher consumed successfully!") -- Debug
-            sendWebhook("Voucher consumed! Total slots were less than 30.")
+            
+            -- Check if the total slots increased after consuming the voucher
+            local newTotalSlots = daycareCmds.GetMaxSlots()
+
+            print("Total Slots after consuming voucher:", newTotalSlots)
+
+            if newTotalSlots == counter then
+                -- Send webhook if the slots didn't increase
+                sendWebhook("Voucher consumed but slots did not increase. Current slots: " .. tostring(newTotalSlots) .. "/30.")
+            else
+                print("Slots increased to " .. newTotalSlots .. " after voucher consumption.")
+            end
         else
             print("Error consuming voucher: " .. tostring(error)) -- Debug
         end
@@ -79,6 +90,7 @@ local function checkAndConsumeVoucherIfNeeded()
         print("Total slots are already 30 or more.")
     end
 end
+
 
 
 
@@ -144,7 +156,7 @@ local function autoClaimMailbox()
                 print("Error claiming from mailbox: " .. tostring(error)) -- Debug
             end
 
-            task.wait(30)  -- Wait 30 seconds before checking the mailbox again
+            task.wait(60)  -- Wait 30 seconds before checking the mailbox again
         end
     end)
 end
