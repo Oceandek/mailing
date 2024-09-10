@@ -1,9 +1,12 @@
--- test 1
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Library = ReplicatedStorage:FindFirstChild("Library")
-local daycareSlotVoucherConsume = ReplicatedStorage:WaitForChild("Network"):WaitForChild("DaycareSlotVoucher_Consume", 5) -- Timeout after 5 seconds if not found
-local mailboxClaimAll = ReplicatedStorage:WaitForChild("Network"):WaitForChild("Mailbox: Claim All", 5) -- Timeout after 5 seconds if not found
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Pet inventory module
+local Save = require(ReplicatedStorage.Library.Client.Save)
+local daycareSlotVoucherConsume = ReplicatedStorage:WaitForChild("Network"):WaitForChild("DaycareSlotVoucher_Consume")
+local mailboxClaimAll = ReplicatedStorage:WaitForChild("Network"):WaitForChild("Mailbox: Claim All")
 
 -- Discord Webhook Config
 local webhookUrl = "https://discord.com/api/webhooks/1283130489758285900/q_p3g7_SSsnwi8pfHces1_ZVlpqMG45fd1ytzu9PXhu1PE8UFvPK-ZQ4xChaobEvQoNM"
@@ -12,7 +15,7 @@ local webhookUrl = "https://discord.com/api/webhooks/1283130489758285900/q_p3g7_
 local function sendWebhook(message)
     print("Sending webhook with message: " .. message) -- Debug
     local data = {
-        ["username"] = game.Players.LocalPlayer.Name .. " needs tickets!",
+        ["username"] = game.Players.LocalPlayer.Name .. " has enrolled pets in daycare.",
         ["avatar_url"] = "https://cdn.discordapp.com/avatars/593552251939979275/58ea82801d6003749293c7bba1efabc8.webp?size=1024&format=webp&width=0&height=256",
         ["content"] = message,
         ["embeds"] = {
@@ -22,7 +25,7 @@ local function sendWebhook(message)
                     ["url"] = "https://www.roblox.com/users/" .. game.Players.LocalPlayer.UserId,
                     ["icon_url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. game.Players.LocalPlayer.UserId .. "&width=420&height=420&format=png",
                 },
-                ["title"] = "Slot Upgrade Request",
+                ["title"] = "Daycare Enrollment Notification",
                 ["color"] = 0x212325,
                 ["footer"] = {
                     ["text"] = "Pet Simulator",
@@ -48,6 +51,59 @@ local function sendWebhook(message)
     end
 end
 
+-- Function to find pets that can be enrolled in daycare
+local function findPetsForDaycare()
+    local petIds = {}
+
+    -- Loop through the player's pet inventory
+    for id, data in pairs(Save.Get().Inventory.Pet) do
+        if data._am ~= nil and data._am >= 10 and data.pt ~= nil and data.pt == 1 then
+            table.insert(petIds, id)
+            -- Enroll exactly 30 pets
+            if #petIds >= 30 then
+                break
+            end
+        end
+    end
+
+    return petIds
+end
+
+-- Function to enroll 30 pets in daycare
+local function enrollPetsInDaycare()
+    local petIds = findPetsForDaycare()
+
+    if #petIds == 30 then
+        local args = { [1] = {} }
+
+        -- Add pets to the enrollment args with value 30
+        for _, petId in pairs(petIds) do
+            args[1][petId] = 30 -- Each pet will be set to 30 as required
+        end
+
+        -- Enroll pets by invoking the server
+        print("Enrolling 30 pets in daycare:", args)
+        ReplicatedStorage:WaitForChild("Network"):WaitForChild("Daycare: Enroll"):InvokeServer(unpack(args))
+
+        -- Notify via webhook
+        local message = "Enrolled 30 pets in the daycare."
+        sendWebhook(message)
+    else
+        print("Not enough pets found for enrollment. Found:", #petIds)
+    end
+end
+
+-- Function to run daycare enrollment every 10 minutes
+local function autoDaycare()
+    task.spawn(function()
+        while true do
+            print("Running auto-enroll for daycare...")
+            enrollPetsInDaycare()
+            task.wait(600)  -- Wait for 10 minutes (600 seconds) before running again
+        end
+    end)
+end
+
 -- Function to check mailbox every 30 seconds and claim rewards
 local function autoClaimMailbox()
     task.spawn(function()
@@ -69,89 +125,6 @@ local function autoClaimMailbox()
     end)
 end
 
--- Function to consume ticket until max slots reach 30
-local function consumeTicketsUntilMaxSlots(targetSlots)
-    print("Checking for Library...") -- Debug
-    if not Library then
-        print("Library not found in ReplicatedStorage!") -- Debug
-        return
-    end
-
-    print("Library found!") -- Debug
-    local success, daycareCmds = pcall(function()
-        return require(Library.Client.DaycareCmds)
-    end)
-
-    if not success or not daycareCmds then
-        print("Failed to load DaycareCmds: " .. tostring(daycareCmds)) -- Debug
-        return
-    end
-
-    print("DaycareCmds loaded successfully!") -- Debug
-
-    -- Start autoclaim mailbox every 30 seconds
-    autoClaimMailbox()
-
-    -- Track previous slot count to check if it changes
-    local previousSlots = 0
-
-    -- Loop until the total slots reach the targetSlots (in this case, 30)
-    while true do
-        -- Check current number of slots
-        local success, totalSlots = pcall(function()
-            return daycareCmds.GetMaxSlots()
-        end)
-
-        if not success then
-            print("Error getting max slots: " .. tostring(totalSlots)) -- Debug
-            break
-        end
-
-        print("Total Slots:", totalSlots) -- Debug
-
-        -- If slots are already 30 or more, break out of the loop
-        if totalSlots >= targetSlots then
-            print("Max slots reached:", totalSlots) -- Debug
-            break
-        end
-
-        -- Check if the slots did not increase
-        if totalSlots == previousSlots then
-            print("Total slots not increasing. Sending webhook...") -- Debug
-            local message = game.Players.LocalPlayer.Name .. " needs more tickets. Stuck at " .. totalSlots .. " slots."
-            sendWebhook(message)
-            break  -- Stop the loop after sending the webhook
-        else
-            previousSlots = totalSlots
-        end
-
-        -- Consume a ticket if possible, otherwise send a webhook message
-        print("Attempting to consume a ticket...") -- Debug
-        local consumeSuccess, consumeError = pcall(function()
-            daycareSlotVoucherConsume:InvokeServer()
-        end)
-
-        if not consumeSuccess then
-            local remainingSlots = targetSlots - (totalSlots or 0)
-            local message = game.Players.LocalPlayer.Name .. " needs " .. remainingSlots .. " more tickets to reach " .. targetSlots .. " slots."
-            print("Failed to consume ticket. Sending webhook...") -- Debug
-            print("Message: " .. message) -- Debug
-            sendWebhook(message)
-        else
-            print("Ticket consumed successfully!") -- Debug
-        end
-
-        -- Optional: Add a short wait to avoid spamming the server (depends on the system)
-        task.wait(1)
-    end
-end
-
--- Check for critical components before starting
-if not daycareSlotVoucherConsume then
-    print("Failed to find daycareSlotVoucherConsume in ReplicatedStorage!") -- Debug
-elseif not mailboxClaimAll then
-    print("Failed to find mailboxClaimAll in ReplicatedStorage!") -- Debug
-else
-    print("Starting ticket consumption loop...") -- Debug
-    consumeTicketsUntilMaxSlots(30)
-end
+-- Start the automatic mailbox claiming and daycare enrollment
+autoClaimMailbox()  -- Automatically claims mailbox rewards every 30 seconds
+autoDaycare()       -- Automatically enrolls pets in daycare every 10 minutes
