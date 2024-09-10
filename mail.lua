@@ -1,4 +1,4 @@
---blackk
+--orange
 
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -75,6 +75,7 @@ local function checkAndConsumeVoucherIfNeeded()
             print("Voucher consumed successfully!") -- Debug
             
             -- Check if the total slots increased after consuming the voucher
+            task.wait(5)
             local newTotalSlots = daycareCmds.GetMaxSlots()
 
             print("Total Slots after consuming voucher:", newTotalSlots)
