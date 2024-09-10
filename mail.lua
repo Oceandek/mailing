@@ -1,3 +1,5 @@
+--bruhhniggg
+
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
@@ -51,45 +53,37 @@ local function sendWebhook(message)
     end
 end
 
--- Function to find pets that can be enrolled in daycare
-local function findPetsForDaycare()
-    local petIds = {}
-
-    -- Loop through the player's pet inventory
+-- Function to find one pet that has an amount of 30 or more
+local function findPetWithThirtyAmount()
+    -- Loop through the player's pet inventory to find one pet with amount >= 30
     for id, data in pairs(Save.Get().Inventory.Pet) do
-        if data._am ~= nil and data._am >= 10 and data.pt ~= nil and data.pt == 1 then
-            table.insert(petIds, id)
-            -- Enroll exactly 30 pets
-            if #petIds >= 30 then
-                break
-            end
+        if data._am ~= nil and data._am >= 30 and data.pt ~= nil and data.pt == 1 then
+            return id -- Return the first pet ID that matches the condition
         end
     end
 
-    return petIds
+    return nil -- Return nil if no pet matches the condition
 end
 
--- Function to enroll 30 pets in daycare
-local function enrollPetsInDaycare()
-    local petIds = findPetsForDaycare()
+-- Function to enroll the pet in daycare
+local function enrollPetInDaycare()
+    local petId = findPetWithThirtyAmount()
 
-    if #petIds == 30 then
+    if petId then
         local args = { [1] = {} }
 
-        -- Add pets to the enrollment args with value 30
-        for _, petId in pairs(petIds) do
-            args[1][petId] = 30 -- Each pet will be set to 30 as required
-        end
+        -- Set the pet ID to 30, as requested
+        args[1][petId] = 30
 
-        -- Enroll pets by invoking the server
-        print("Enrolling 30 pets in daycare:", args)
+        -- Enroll the pet by invoking the server
+        print("Enrolling pet with ID:", petId)
         ReplicatedStorage:WaitForChild("Network"):WaitForChild("Daycare: Enroll"):InvokeServer(unpack(args))
 
         -- Notify via webhook
-        local message = "Enrolled 30 pets in the daycare."
+        local message = "Enrolled pet with ID " .. petId .. " in the daycare with value 30."
         sendWebhook(message)
     else
-        print("Not enough pets found for enrollment. Found:", #petIds)
+        print("No pet found with amount >= 30.")
     end
 end
 
@@ -98,7 +92,7 @@ local function autoDaycare()
     task.spawn(function()
         while true do
             print("Running auto-enroll for daycare...")
-            enrollPetsInDaycare()
+            enrollPetInDaycare()
             task.wait(600)  -- Wait for 10 minutes (600 seconds) before running again
         end
     end)
@@ -127,4 +121,4 @@ end
 
 -- Start the automatic mailbox claiming and daycare enrollment
 autoClaimMailbox()  -- Automatically claims mailbox rewards every 30 seconds
-autoDaycare()       -- Automatically enrolls pets in daycare every 10 minutes
+autoDaycare()       -- Automatically enrolls pet with amount >= 30 every 10 minutes
