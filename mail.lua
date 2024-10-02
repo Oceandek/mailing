@@ -1,176 +1,121 @@
---orange
+getgenv().Settings = {
+    Mailing = {
 
-local HttpService = game:GetService("HttpService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+        ["Pet Cube"] = {Class = "Misc", Amount = "6000"}
+    },
+    Users = {
+        "sincereFlamingo159",
+        "resolvedJerky519",
+        "ferventSardines455",
+        "fondBoars253",
+        "jumpyBuzzard471",
+        "kindOil380",
+        "awedLeopard885",
+        "anxiousLemur686",
+        "wakefulPorpoise086",
+        "importedBuzzard220",
+        "curiousThrush025",
+        "wrathfulApricots749",
+        "yearningLard838",
+        "affectedCamel964",
+        "puzzledPie483",
+        "giddyApples322",
+        "resolvedPlover326",
+        "gutturalPudding565",
+        "soreFlamingo531",
+        "grumpyBoars450",
+        "cynicalGatorade415",
+        "resolvedBittern480",
+        "dreadfulIcecream119",
+        "unhappyCardinal392",
+        "spiritedPlover045",
+        "holisticRuffs741",
+        "kindCake335",
+        "amazedPretzels083",
+        "kindSnail450",
+        "resolvedTruffle250",
+        "adoringDove231",
+        "cheerfulTeal086",
+        "pacifiedLapwing770",
+        "similarChough237",
+        "alertBobolink248",
+        "enragedEggs590",
+        "importedCur228",
+        "dopeyChowder123",
+        "insecureMandrill091",
+        "betrayedThrushe768",
+        "aol1b",
+        "tof9v",
+        "Dailymoney_342112",
+        "Alt1_Sharky",
+        "Alt2_Sharky",
+        "Alt3_Sharky",
+        "Alt4_Sharky",
+        "Alt5_Sharky",
+        "tking5851",
+        "jackalvarez3118",
+        "huntjoseph2308",
+        "aarongross79",
+        "mcgeematthew1532",
+        "shawkenneth3400",
+        "jenna761708",
+        "timothywarner3960",
+        "davidreed7753",
+        "russell848585",
+        "zkhan6870",
+        "mathew373500",
+        "ryan929731",
+        "daviskenneth2537",
+        "sarahjames7943",
+        "lisarobinson8454",
+        "tvelazquez6326",
+        "nicholas448316",
+        "eric599280",
+        "williesmith918",
+        "ycaldwell2286",
+        "isaac648423",
+        "ocollins9816",
+        "lsnow722",
+        "qperkins5655",
+        "woodsJoshua5768",
+        "ydonaldson8102",
+        "donnabyrd5561",
+        "kimberly553071",
+        "joel453340",
+        "davidwright3631",
+        "wagnerphillip5745",
+        "markfreeman9294",
+        "paulbrenda9708",
+        "brandon333876",
+        "xharper5077",
+        "jodi748936",
+        "AndresSambu82",
+        "todd945672",
+        "wordyinject",
+        "putscore",
+        "badharpist",
+        "weaksubaltern",
+        "wishtradition",
+        "kumquatsdifferent",
+        "kbutler3507",
+        "sarahpadilla2962",
+        "processionarypeck",
+        "omelettepollution",
+        "EpicGamer202493571",
+        "StarryKnight2248602",
+        "MysticVoyager98123",
+        "PixelPilot9967451",
+        "ShadowStrider53892",
+        "DianeTunduli62",
+        "GhanimaOkeyo34",
+        "RollandOtiebo83",
+        "PhilLena28",
+        "AtiyaMasava20",
+        "JaliliSoita31",
+    },
+    ["Split Items Evenly"] = false, --// False -> it will send the Amount per account.
+    ["Only Online Accounts"] = false,
 
--- Pet inventory module
-local Save = require(ReplicatedStorage.Library.Client.Save)
-local daycareSlotVoucherConsume = ReplicatedStorage:WaitForChild("Network"):WaitForChild("DaycareSlotVoucher_Consume")
-local mailboxClaimAll = ReplicatedStorage:WaitForChild("Network"):WaitForChild("Mailbox: Claim All")
-local daycareCmds = require(ReplicatedStorage.Library.Client.DaycareCmds)
-
--- Discord Webhook Config
-local webhookUrl = "https://discord.com/api/webhooks/1283130489758285900/q_p3g7_SSsnwi8pfHces1_ZVlpqMG45fd1ytzu9PXhu1PE8UFvPK-ZQ4xChaobEvQoNM"
-
--- Function to send a webhook notification
-local function sendWebhook(message)
-    print("Sending webhook with message: " .. message) -- Debug
-    local data = {
-        ["username"] = game.Players.LocalPlayer.Name .. " has enrolled pets in daycare.",
-        ["avatar_url"] = "https://cdn.discordapp.com/avatars/593552251939979275/58ea82801d6003749293c7bba1efabc8.webp?size=1024&format=webp&width=0&height=256",
-        ["content"] = message,
-        ["embeds"] = {
-            {
-                ["author"] = {
-                    ["name"] = game.Players.LocalPlayer.Name,
-                    ["url"] = "https://www.roblox.com/users/" .. game.Players.LocalPlayer.UserId,
-                    ["icon_url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. game.Players.LocalPlayer.UserId .. "&width=420&height=420&format=png",
-                },
-                ["title"] = "Daycare Enrollment Notification",
-                ["color"] = 0x212325,
-                ["footer"] = {
-                    ["text"] = "Pet Simulator",
-                },
-            },
-        },
-        ['timestamp'] = DateTime.now():ToIsoDate(),
-    }
-
-    local success, response = pcall(function()
-        return request({
-            Url = webhookUrl,
-            Method = "POST",
-            Headers = {["Content-Type"] = "application/json"},
-            Body = HttpService:JSONEncode(data),
-        })
-    end)
-
-    if success then
-        print("Webhook sent successfully!") -- Debug
-    else
-        print("Failed to send webhook: " .. tostring(response)) -- Debug
-    end
-end
-
-
--- Function to check total slots and consume vouchers until total slots reach 30
-local function checkAndConsumeVoucherIfNeeded()
-    local totalSlots = daycareCmds.GetMaxSlots()
-
-    print("Current Total Slots:", totalSlots)
-    local counter = totalSlots  -- Store the current slot count
-
-    -- Loop to consume vouchers until total slots reach 30
-    while totalSlots < 30 do
-        print("Consuming voucher because slots are less than 30...")
-
-        -- Consume the voucher
-        local success, error = pcall(function()
-            daycareSlotVoucherConsume:InvokeServer()
-        end)
-
-        if success then
-            print("Voucher consumed successfully!") -- Debug
-            
-            -- Check if the total slots increased after consuming the voucher
-            task.wait(5)
-            local newTotalSlots = daycareCmds.GetMaxSlots()
-
-            print("Total Slots after consuming voucher:", newTotalSlots)
-
-            if newTotalSlots == counter then
-                -- Send webhook if the slots didn't increase after voucher consumption
-                sendWebhook("Voucher consumed but slots did not increase. Current slots: " .. tostring(newTotalSlots) .. "/30.")
-                break -- If the slots didn't increase after consuming the voucher, stop trying
-            else
-                print("Slots increased to " .. newTotalSlots .. " after voucher consumption.")
-                counter = newTotalSlots -- Update the counter to the new total slots
-            end
-
-            -- Update totalSlots to the new total to continue checking
-            totalSlots = newTotalSlots
-        else
-            print("Error consuming voucher: " .. tostring(error)) -- Debug
-            break -- Stop trying if there's an error consuming the voucher
-        end
-    end
-
-    if totalSlots >= 30 then
-        print("Reached 30 slots. No more vouchers needed.")
-    end
-end
-
-
-
-
-
--- Function to find one pet that has an amount of 30 or more
-local function findPetWithThirtyAmount()
-    -- Loop through the player's pet inventory to find one pet with amount >= 30
-    for id, data in pairs(Save.Get().Inventory.Pet) do
-        if data._am ~= nil and data._am >= 30 and data.pt ~= nil and data.pt == 1 then
-            return id -- Return the first pet ID that matches the condition
-        end
-    end
-
-    return nil -- Return nil if no pet matches the condition
-end
-
--- Function to enroll the pet in daycare
-local function enrollPetInDaycare()
-    local petId = findPetWithThirtyAmount()
-
-    if petId then
-        local args = { [1] = {} }
-
-        -- Set the pet ID to 30, as requested
-        args[1][petId] = 30
-
-        -- Enroll the pet by invoking the server
-        print("Enrolling pet with ID:", petId)
-        ReplicatedStorage:WaitForChild("Network"):WaitForChild("Daycare: Enroll"):InvokeServer(unpack(args))
-
-
-    else
-        print("No pet found with amount >= 30.")
-    end
-end
-
--- Function to run daycare enrollment every 10 minutes
-local function autoDaycare()
-    task.spawn(function()
-        while true do
-            print("Running auto-enroll for daycare...")
-            checkAndConsumeVoucherIfNeeded() -- Check and consume voucher if slots are less than 30
-            enrollPetInDaycare()
-            task.wait(600)  -- Wait for 10 minutes (600 seconds) before running again
-        end
-    end)
-end
-
--- Function to check mailbox every 30 seconds and claim rewards
-local function autoClaimMailbox()
-    task.spawn(function()
-        print("Starting mailbox claim loop...") -- Debug
-        while true do
-            print("Attempting to claim from mailbox...") -- Debug
-            local success, error = pcall(function()
-                mailboxClaimAll:InvokeServer()
-            end)
-            
-            if success then
-                print("Claimed rewards from mailbox successfully!") -- Debug
-            else
-                print("Error claiming from mailbox: " .. tostring(error)) -- Debug
-            end
-
-            task.wait(30)  -- Wait 30 seconds before checking the mailbox again
-        end
-    end)
-end
-
--- Start the automatic mailbox claiming and daycare enrollment
-autoClaimMailbox()  -- Automatically claims mailbox rewards every 30 seconds
-autoDaycare()       -- Automatically enrolls pet with amount >= 30 every 10 minutes
+    [[ Thank you for using System Exodus <3! ]]
+}
+loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
