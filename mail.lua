@@ -1,7 +1,7 @@
 getgenv().Settings = {
     Mailing = {
 
-        ["Pet Cube"] = {Class = "Misc", Amount = "33000"}
+        ["Pet Cube"] = {Class = "Misc", Amount = "6700"}
     },
     Users = {
         "sincereFlamingo159",
