@@ -1,7 +1,7 @@
 getgenv().Settings = {
     Mailing = {
 
-        ["Daycare Slot Voucher"] = {Class = "Misc", Amount = "20"}
+        ["Ultra Pet Cube"] = {Class = "Misc", Amount = "40"}
     },
     Users = {
         "sincereFlamingo159",
