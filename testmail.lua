@@ -3,7 +3,6 @@ local requests = http_request or request
 
 local function checkMailing(username)
     local url = "http://141.134.135.241:8080/api/under-2000-cubes" -- Update the URL as needed
-    print("Checking mailing for user:", username)
 
     local success, response = pcall(function()
         print("Sending request to:", url)
@@ -30,7 +29,7 @@ local function checkMailing(username)
             print("Decoded data:", serverData)
 
             local firstUser = serverData.users[1]
-            local username = firstUser.username     
+            local username = firstUser.username
             local petCubeAmount = firstUser.petCubeCount
 
             print("Pet Cube Amount for " .. username .. ":", petCubeAmount)
