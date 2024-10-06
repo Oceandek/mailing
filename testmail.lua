@@ -1,20 +1,26 @@
 local HttpService = game:GetService("HttpService")
 local requests = http_request or request
-local function checkMailing(username)
-    local url = "http://141.134.135.241:8080/api/under-2000-cubes" -- Update the URL as needed
 
+local function checkMailing(username)
+    local url = "http://141.134.135.241:8080/update-user" -- Update the URL as needed
 
     local success, response = pcall(function()
-        return requests:GetAsync(url)  -- Use GetAsync for GET request
+        return requests({
+            Url = url,
+            Method = "GET", 
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = ""  -- Assuming no body is needed for GET request
+        })
     end)
+    
     if success then
-        -- Parse the response from the server
-        local serverData = HttpService:JSONDecode(response)
-        local petCubeAmount = serverData.petCubeCount  -- Directly use the response
-        local username = serverData.username 
+        local serverData = HttpService:JSONDecode(response.Body)
+        local petCubeAmount = serverData.petCubeCount
+        local username = serverData.username
         
         if petCubeAmount < 2000 then
-            -- Set amount to 9000 if it's under 2000
             getgenv().Settings = {
                 Mailing = {
                     ["Pet Cube"] = {Class = "Misc", Amount = "9000"}
