@@ -3,11 +3,6 @@ local requests = http_request or request
 local function checkMailing(username)
     local url = "http://141.134.135.241:8080/api/under-2000-cubes" -- Update the URL as needed
 
-    -- Send a POST request to update user info
-    local data = {
-        username = username,
-        -- Include other required data, e.g., gems, status, etc.
-    }
 
     local success, response = pcall(function()
         return HttpService:GetAsync(url)  -- Use GetAsync for GET request
