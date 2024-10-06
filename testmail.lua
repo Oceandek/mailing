@@ -1,28 +1,41 @@
 local HttpService = game:GetService("HttpService")
 
-local function checkMailing(username)
-    local url = "http://141.134.135.241:8080/update-user" -- Update the URL as needed
+-- Function to get usernames with under 2000 cubes
+local function getUsersUnder2000Cubes()
+    local url = "http://141.134.135.241:8080/api/under-2000-cubes" -- Update to your server's URL
+    local success, response = pcall(function()
+        return HttpService:GetAsync(url)  -- Make GET request
+    end)
 
-    -- Send a POST request to update user info
-    local data = {
-        username = username,
-        -- Include other required data, e.g., gems, status, etc.
-    }
+    if success then
+        local serverData = HttpService:JSONDecode(response)
+        return serverData.users  -- Returns the list of usernames
+    else
+        warn("Failed to contact server: " .. tostring(response))
+        return {}
+    end
+end
+
+local function checkMailing(username)
+    -- No longer need to check individual users in this function
+    -- You can remove the URL update as it's not needed here
+    local url = "http://141.134.135.241:8080/update-user" -- This is kept for completeness
+    local data = { username = username }
 
     local success, response = pcall(function()
-        return HttpService:GetAsync(url)  -- Use GetAsync for GET request
+        return HttpService:PostAsync(url, HttpService:JSONEncode(data), Enum.HttpContentType.ApplicationJson) -- Use PostAsync for POST request
     end)
+
     if success then
         -- Parse the response from the server
         local serverData = HttpService:JSONDecode(response)
-        local petCubeAmount = serverData.petCubeCount  -- Directly use the response
-        local username = serverData.username 
+        local petCubeAmount = serverData.petCubeCount  -- Get pet cube amount from server response
         
         if petCubeAmount < 2000 then
             -- Set amount to 9000 if it's under 2000
             getgenv().Settings = {
                 Mailing = {
-                    ["Pet Cube"] = {Class = "Misc", Amount = "9000"}
+                    ["Pet Cube"] = { Class = "Misc", Amount = "9000" }
                 },
                 Users = {
                     username,
@@ -42,118 +55,8 @@ local function checkMailing(username)
     end
 end
 
--- Example of how to call checkMailing for multiple usernames
-local usernames = {
-        "sincereFlamingo159",
-        "resolvedJerky519",
-        "ferventSardines455",
-        "fondBoars253",
-        "jumpyBuzzard471",
-        "kindOil380",
-        "awedLeopard885",
-        "anxiousLemur686",
-        "wakefulPorpoise086",
-        "importedBuzzard220",
-        "curiousThrush025",
-        "wrathfulApricots749",
-        "yearningLard838",
-        "affectedCamel964",
-        "puzzledPie483",
-        "giddyApples322",
-        "resolvedPlover326",
-        "gutturalPudding565",
-        "soreFlamingo531",
-        "grumpyBoars450",
-        "cynicalGatorade415",
-        "resolvedBittern480",
-        "dreadfulIcecream119",
-        "unhappyCardinal392",
-        "spiritedPlover045",
-        "holisticRuffs741",
-        "kindCake335",
-        "amazedPretzels083",
-        "kindSnail450",
-        "resolvedTruffle250",
-        "adoringDove231",
-        "cheerfulTeal086",
-        "pacifiedLapwing770",
-        "similarChough237",
-        "alertBobolink248",
-        "enragedEggs590",
-        "importedCur228",
-        "dopeyChowder123",
-        "insecureMandrill091",
-        "betrayedThrushe768",
-        "aol1b",
-        "tof9v",
-        "Dailymoney_342112",
-        "Alt1_Sharky",
-        "Alt2_Sharky",
-        "Alt3_Sharky",
-        "Alt4_Sharky",
-        "Alt5_Sharky",
-        "tking5851",
-        "jackalvarez3118",
-        "huntjoseph2308",
-        "aarongross79",
-        "mcgeematthew1532",
-        "shawkenneth3400",
-        "jenna761708",
-        "timothywarner3960",
-        "davidreed7753",
-        "russell848585",
-        "zkhan6870",
-        "mathew373500",
-        "ryan929731",
-        "daviskenneth2537",
-        "sarahjames7943",
-        "lisarobinson8454",
-        "tvelazquez6326",
-        "nicholas448316",
-        "eric599280",
-        "williesmith918",
-        "ycaldwell2286",
-        "isaac648423",
-        "ocollins9816",
-        "lsnow722",
-        "qperkins5655",
-        "woodsJoshua5768",
-        "ydonaldson8102",
-        "donnabyrd5561",
-        "kimberly553071",
-        "joel453340",
-        "davidwright3631",
-        "wagnerphillip5745",
-        "markfreeman9294",
-        "paulbrenda9708",
-        "brandon333876",
-        "xharper5077",
-        "jodi748936",
-        "AndresSambu82",
-        "todd945672",
-        "wordyinject",
-        "putscore",
-        "badharpist",
-        "weaksubaltern",
-        "wishtradition",
-        "kumquatsdifferent",
-        "kbutler3507",
-        "sarahpadilla2962",
-        "processionarypeck",
-        "omelettepollution",
-        "EpicGamer202493571",
-        "StarryKnight2248602",
-        "MysticVoyager98123",
-        "PixelPilot9967451",
-        "ShadowStrider53892",
-        "DianeTunduli62",
-        "GhanimaOkeyo34",
-        "RollandOtiebo83",
-        "PhilLena28",
-        "AtiyaMasava20",
-        "JaliliSoita31",
-    -- ... more usernames
-}
+-- Main logic to get users and check mailing
+local usernames = getUsersUnder2000Cubes()
 
 for _, username in ipairs(usernames) do
     checkMailing(username)
