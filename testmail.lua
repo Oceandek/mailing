@@ -10,9 +10,8 @@ local function checkMailing(username)
     }
 
     local success, response = pcall(function()
-        return HttpService:PostAsync(url, HttpService:JSONEncode(data), Enum.HttpContentType.ApplicationJson)
+        return HttpService:GetAsync(url)  -- Use GetAsync for GET request
     end)
-
     if success then
         -- Parse the response from the server
         local serverData = HttpService:JSONDecode(response)
