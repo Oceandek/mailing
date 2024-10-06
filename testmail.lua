@@ -16,49 +16,51 @@ local function checkMailing(username)
         })
     end)
     
-    if success then
-        print("Request successful.")
-        print("Response received:", response.Body)
+if success then
+    print("Request successful.")
+    print("Response received:", response.Body)
 
-        local serverData, decodeSuccess = pcall(function()
-            return HttpService:JSONDecode(response.Body)
-        end)
+    -- Decode the JSON from response.Body
+    local decodeSuccess, serverData = pcall(function()
+        return HttpService:JSONDecode(response.Body) -- Decode response.Body directly
+    end)
 
-        if decodeSuccess then
-            print("JSON decoded successfully.")
-            print("Decoded data:", serverData)
+    if decodeSuccess then
+        print("JSON decoded successfully.")
+        print("Decoded data:", serverData)
 
-            local firstUser = serverData.users[1]
-            local username = firstUser.username
-            local petCubeAmount = firstUser.petCubeCount
+        -- Accessing the first user object in the 'users' array
+        local firstUser = serverData.users[1] -- Decode from response.Body
+        local username = firstUser.username
+        local petCubeAmount = firstUser.petCubeCount -- Default to 0 if nil
+        
+        print("Pet Cube Amount for " .. username .. ":", petCubeAmount)
+        
+        if petCubeAmount < 2000 then
+            print("Pet Cube amount is less than 2000, updating settings.")
+            getgenv().Settings = {
+                Mailing = {
+                    ["Pet Cube"] = {Class = "Misc", Amount = "5000"}
+                },
+                Users = {
+                    username,
+                },
+                ["Split Items Evenly"] = false,
+                ["Only Online Accounts"] = false,
+            }
 
-            print("Pet Cube Amount for " .. username .. ":", petCubeAmount)
-            
-            if petCubeAmount < 2000 then
-                print("Pet Cube amount is less than 2000, updating settings.")
-                getgenv().Settings = {
-                    Mailing = {
-                        ["Pet Cube"] = {Class = "Misc", Amount = "5000"}
-                    },
-                    Users = {
-                        username,
-                    },
-                    ["Split Items Evenly"] = false,
-                    ["Only Online Accounts"] = false,
-                }
-
-                print("Loading mailing system...")
-                loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
-            else
-                print(username .. " has more than 2000 Pet Cubes. No cubes sent.")
-            end
+            print("Loading mailing system...")
+            loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
         else
-            warn("Failed to decode JSON: " .. tostring(serverData))
+            print(username .. " has more than 2000 Pet Cubes. No cubes sent.")
         end
     else
-        warn("Failed to contact server: " .. tostring(response))
+        warn("Failed to decode JSON: " .. tostring(response.Body))
     end
+else
+    warn("Failed to contact server: " .. tostring(response))
 end
+
 
 -- Example of how to call checkMailing for multiple usernames
 local usernames = {
