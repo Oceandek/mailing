@@ -29,9 +29,10 @@ local function checkMailing(username)
             print("JSON decoded successfully.")
             print("Decoded data:", serverData)
 
-            local petCubeAmount = serverData.petCubeCount
-            local username = serverData.users[1] -- Adjust to handle an array
-            
+            local firstUser = serverData.users[1]
+            local username = firstUser.username     
+            local petCubeAmount = firstUser.petCubeCount
+
             print("Pet Cube Amount for " .. username .. ":", petCubeAmount)
             
             if petCubeAmount < 2000 then
