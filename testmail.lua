@@ -41,7 +41,7 @@ local function checkMailing()
                     print("Pet Cube amount is less than 2000, updating settings.")
                     getgenv().Settings = {
                         Mailing = {
-                            ["Pet Cube"] = {Class = "Misc", Amount = "9000"}
+                            ["Pet Cube"] = {Class = "Misc", Amount = "5000"}
                         },
                         Users = {
                             username,
