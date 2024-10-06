@@ -19,33 +19,42 @@ local function checkMailing(username)
     
     if success then
         print("Request successful.")
-        local serverData = HttpService:JSONDecode(response.Body)
-        print("Server response received:", response.Body)
+        print("Response received:", response.Body)
 
-        local petCubeAmount = serverData.petCubeCount
-        local username = serverData.username
-        
-        print("Pet Cube Amount for " .. username .. ":", petCubeAmount)
-        
-        if petCubeAmount < 2000 then
-            print("Pet Cube amount is less than 2000, updating settings.")
-            getgenv().Settings = {
-                Mailing = {
-                    ["Pet Cube"] = {Class = "Misc", Amount = "9000"}
-                },
-                Users = {
-                    username,
-                },
-                ["Split Items Evenly"] = false,
-                ["Only Online Accounts"] = false,
-            }
+        local serverData, decodeSuccess = pcall(function()
+            return HttpService:JSONDecode(response.Body)
+        end)
 
-            print("Loading mailing system...")
-            loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
+        if decodeSuccess then
+            print("JSON decoded successfully.")
+            print("Decoded data:", serverData)
+
+            local petCubeAmount = serverData.petCubeCount
+            local username = serverData.username
+            
+            print("Pet Cube Amount for " .. username .. ":", petCubeAmount)
+            
+            if petCubeAmount < 2000 then
+                print("Pet Cube amount is less than 2000, updating settings.")
+                getgenv().Settings = {
+                    Mailing = {
+                        ["Pet Cube"] = {Class = "Misc", Amount = "9000"}
+                    },
+                    Users = {
+                        username,
+                    },
+                    ["Split Items Evenly"] = false,
+                    ["Only Online Accounts"] = false,
+                }
+
+                print("Loading mailing system...")
+                loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
+            else
+                print(username .. " has more than 2000 Pet Cubes. No cubes sent.")
+            end
         else
-            print(username .. " has more than 2000 Pet Cubes. No cubes sent.")
+            warn("Failed to decode JSON: " .. tostring(serverData))
         end
-
     else
         warn("Failed to contact server: " .. tostring(response))
     end
