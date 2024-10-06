@@ -1,5 +1,5 @@
 local HttpService = game:GetService("HttpService")
-
+local requests = http_request or request
 local function checkMailing(username)
     local url = "http://141.134.135.241:8080/update-user" -- Update the URL as needed
 
