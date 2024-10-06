@@ -29,33 +29,36 @@ local function checkMailing()
             print("JSON decoded successfully.")
             print("Decoded data:", serverData)
 
-            -- Accessing the first user object in the 'users' array
+            -- Loop through all users in the 'users' array
             if serverData.users and #serverData.users > 0 then
-                local firstUser = serverData.users[1] -- Decode from response.Body
-                local username = firstUser.username
-                local petCubeAmount = firstUser.petCubeCount or 0 -- Default to 0 if nil
-                
-                print("Pet Cube Amount for " .. username .. ":", petCubeAmount)
-                
-                if petCubeAmount < 2000 then
-                    print("Pet Cube amount is less than 2000, updating settings.")
-                    getgenv().Settings = {
-                        Mailing = {
-                            ["Pet Cube"] = {Class = "Misc", Amount = "5000"}
-                        },
-                        Users = {
-                            username,
-                        },
-                        ["Split Items Evenly"] = false,
-                        ["Only Online Accounts"] = false,
-                    }
-
-                    -- Print a thank-you message separately (as it's not part of the settings)
-                    print("Thank you for using System Exodus <3!")
+                for i, user in ipairs(serverData.users) do
+                    local username = user.username
+                    local petCubeAmount = user.petCubeCount or 0 -- Default to 0 if nil
                     
-                    loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
-                else
-                    print(username .. " has more than 2000 Pet Cubes. No cubes sent.")
+                    print("Processing user " .. username .. " with Pet Cube Amount:", petCubeAmount)
+                    
+                    if petCubeAmount < 2000 then
+                        print("Pet Cube amount is less than 2000, updating settings for " .. username)
+
+                        getgenv().Settings = {
+                            Mailing = {
+                                ["Pet Cube"] = {Class = "Misc", Amount = "9000"}
+                            },
+                            Users = {
+                                username,
+                            },
+                            ["Split Items Evenly"] = false,
+                            ["Only Online Accounts"] = false,
+                        }
+
+                        -- Print a thank-you message separately
+                        print("Thank you for using System Exodus <3 for user " .. username)
+                        
+                        -- Load mailing system for each user
+                        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
+                    else
+                        print(username .. " has more than 2000 Pet Cubes. No cubes sent.")
+                    end
                 end
             else
                 print("No users found with under 2000 Pet Cubes.")
@@ -68,4 +71,7 @@ local function checkMailing()
     end
 end
 
-checkMailing() -- Call the function once
+while true do
+    checkMailing()  -- Run the function
+    wait(300)  -- Pause for 5 minutes (300 seconds) before running again
+end
