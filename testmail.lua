@@ -42,7 +42,7 @@ local function checkMailing()
 
                         getgenv().Settings = {
                             Mailing = {
-                                ["Pet Cube"] = {Class = "Misc", Amount = "9000"}
+                                ["Pet Cube"] = {Class = "Misc", Amount = "3000"}
                             },
                             Users = {
                                 username,
