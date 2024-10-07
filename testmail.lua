@@ -33,16 +33,16 @@ local function checkMailing()
             if serverData.users and #serverData.users > 0 then
                 for i, user in ipairs(serverData.users) do
                     local username = user.username
-                    local petCubeAmount = user.petCubeCount or 0 -- Default to 0 if nil
+                    local petCubeAmount = user.petCubeCount -- Default to 0 if nil
                     
                     print("Processing user " .. username .. " with Pet Cube Amount:", petCubeAmount)
                     
-                    if petCubeAmount < 2000 then
-                        print("Pet Cube amount is less than 2000, updating settings for " .. username)
+                    if petCubeAmount < 5000 then
+                        print("Pet Cube amount is less than 5000, updating settings for " .. username)
 
                         getgenv().Settings = {
                             Mailing = {
-                                ["Pet Cube"] = {Class = "Misc", Amount = "3000"}
+                                ["Pet Cube"] = {Class = "Misc", Amount = "10000"}
                             },
                             Users = {
                                 username,
@@ -57,11 +57,11 @@ local function checkMailing()
                         -- Load mailing system for each user
                         loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
                     else
-                        print(username .. " has more than 2000 Pet Cubes. No cubes sent.")
+                        print(username .. " has more than 5000 Pet Cubes. No cubes sent.")
                     end
                 end
             else
-                print("No users found with under 2000 Pet Cubes.")
+                print("No users found with under 5000 Pet Cubes.")
             end
         else
             warn("Failed to decode JSON: " .. tostring(response.Body))
