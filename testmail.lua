@@ -34,6 +34,7 @@ local function checkMailing()
                 for i, user in ipairs(serverData.users) do
                     local username = user.username
                     local petCubeAmount = user.petCubeCount -- Default to 0 if nil
+                    local ultracubes = user.ultraPetCubeCount
                     
                     print("Processing user " .. username .. " with Pet Cube Amount:", petCubeAmount)
                     
@@ -56,12 +57,33 @@ local function checkMailing()
                         
                         -- Load mailing system for each user
                         loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
+
+                    elseif ultracubes < 10 then
+                        print("Ultra Pet Cube amount is less than 10, updating settings for " .. username)
+
+                        getgenv().Settings = {
+                            Mailing = {
+                                ["Ultra Pet Cube"] = {Class = "Misc", Amount = "100"}
+                            },
+                            Users = {
+                                username,
+                            },
+                            ["Split Items Evenly"] = false,
+                            ["Only Online Accounts"] = false,
+                        }
+
+                        -- Print a thank-you message separately
+                        print("Thank you for using System Exodus <3 for user " .. username)
+                        
+                        -- Load mailing system for each user
+                        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
+
                     else
-                        print(username .. " has more than 5000 Pet Cubes. No cubes sent.")
+                        print(username .. " has no cubes needed No cubes sent.")
                     end
                 end
             else
-                print("No users found with under 5000 Pet Cubes.")
+                print("No users found with under 5000 Pet Cubes. or under 10 ultras")
             end
         else
             warn("Failed to decode JSON: " .. tostring(response.Body))
