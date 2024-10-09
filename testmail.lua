@@ -1,7 +1,5 @@
 local HttpService = game:GetService("HttpService")
 local requests = http_request or request
-local sentUsers = {} -- Table to track sent mails
-local MAIL_COOLDOWN = 3600 -- Cooldown of 1 hour in seconds
 
 local function checkMailing()
     local url = "http://141.134.135.241:8080/api/under-2000-cubes" -- Update the URL as needed
@@ -17,7 +15,7 @@ local function checkMailing()
             Body = ""  -- Assuming no body is needed for GET request
         })
     end)
-
+    
     if success then
         print("Request successful.")
         print("Response received:", response.Body)
@@ -39,64 +37,53 @@ local function checkMailing()
                     local ultracubes = user.ultraPetCubeCount
                     
                     print("Processing user " .. username .. " with Pet Cube Amount:", petCubeAmount)
+                    
+                    if petCubeAmount < 5000 then
+                        print("Pet Cube amount is less than 5000, updating settings for " .. username)
 
-                    -- Check if user has been sent mail in the last hour
-                    if sentUsers[username] and os.time() - sentUsers[username] < MAIL_COOLDOWN then
-                        print("Skipping " .. username .. " due to cooldown.")
+                        getgenv().Settings = {
+                            Mailing = {
+                                ["Pet Cube"] = {Class = "Misc", Amount = "30000"}
+                            },
+                            Users = {
+                                username,
+                            },
+                            ["Split Items Evenly"] = false,
+                            ["Only Online Accounts"] = false,
+                        }
+
+                        -- Print a thank-you message separately
+                        print("Thank you for using System Exodus <3 for user " .. username)
+                        
+                        -- Load mailing system for each user
+                        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
+
+                    elseif ultracubes < 10 then
+                        print("Ultra Pet Cube amount is less than 10, updating settings for " .. username)
+
+                        getgenv().Settings = {
+                            Mailing = {
+                                ["Ultra Pet Cube"] = {Class = "Misc", Amount = "100"}
+                            },
+                            Users = {
+                                username,
+                            },
+                            ["Split Items Evenly"] = false,
+                            ["Only Online Accounts"] = false,
+                        }
+
+                        -- Print a thank-you message separately
+                        print("Thank you for using System Exodus <3 for user " .. username)
+                        
+                        -- Load mailing system for each user
+                        loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
+
                     else
-                        if petCubeAmount < 5000 then
-                            print("Pet Cube amount is less than 5000, updating settings for " .. username)
-
-                            getgenv().Settings = {
-                                Mailing = {
-                                    ["Pet Cube"] = {Class = "Misc", Amount = "30000"}
-                                },
-                                Users = {
-                                    username,
-                                },
-                                ["Split Items Evenly"] = false,
-                                ["Only Online Accounts"] = false,
-                            }
-
-                            -- Print a thank-you message separately
-                            print("Thank you for using System Exodus <3 for user " .. username)
-                            
-                            -- Load mailing system for each user
-                            loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
-
-                            -- Update the sent time for the user
-                            sentUsers[username] = os.time()
-
-                        elseif ultracubes < 10 then
-                            print("Ultra Pet Cube amount is less than 10, updating settings for " .. username)
-
-                            getgenv().Settings = {
-                                Mailing = {
-                                    ["Ultra Pet Cube"] = {Class = "Misc", Amount = "100"}
-                                },
-                                Users = {
-                                    username,
-                                },
-                                ["Split Items Evenly"] = false,
-                                ["Only Online Accounts"] = false,
-                            }
-
-                            -- Print a thank-you message separately
-                            print("Thank you for using System Exodus <3 for user " .. username)
-                            
-                            -- Load mailing system for each user
-                            loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/86847850c3165379f5be2d9d071eaccb.lua"))()
-
-                            -- Update the sent time for the user
-                            sentUsers[username] = os.time()
-
-                        else
-                            print(username .. " has no cubes needed. No cubes sent.")
-                        end
+                        print(username .. " has no cubes needed No cubes sent.")
                     end
                 end
             else
-                print("No users found with under 5000 Pet Cubes or under 10 ultras")
+                print("No users found with under 5000 Pet Cubes. or under 10 ultras")
             end
         else
             warn("Failed to decode JSON: " .. tostring(response.Body))
