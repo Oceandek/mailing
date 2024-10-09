@@ -95,5 +95,6 @@ end
 
 while true do
     checkMailing()  -- Run the function
+    game:GetService("ReplicatedStorage").Network:FindFirstChild("Mailbox: Claim All"):InvokeServer()
     wait(300)  -- Pause for 5 minutes (300 seconds) before running again
 end
